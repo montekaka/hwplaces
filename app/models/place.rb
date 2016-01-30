@@ -8,9 +8,9 @@ class Place
   def initialize(params={})
   	@id=params[:_id].nil? ? params[:id] : params[:_id].to_s
   	@formatted_address = params[:formatted_address]
-  	@address_components = params[:address_components].nil? ? params[:address_components] : params[:address_components].map{|address_component| AddressComponent.new(address_component)}
-  	#@address_components = params[:address_components].map {|a| AddressComponent.new(a)}
-  	@location = params[:geometry].nil? ? params[:geometry] : Point.new(params[:geometry][:location])
+  	@address_components = params[:address_components].nil? ? params[:address_components] : params[:address_components].map{|address_component| AddressComponent.new(address_component)}  	
+  	#@location = params[:geometry].nil? ? params[:geometry] : Point.new(params[:geometry][:location])
+  	@location = params[:geometry].nil? ? params[:geometry] : Point.new(params[:geometry])
   end
 
 	def self.mongo_client
@@ -100,4 +100,27 @@ class Place
 		]
 		result = collection.find.aggregate(query).map{|doc| doc[:_id].to_s}
 	end
+
+	def self.create_indexes
+		collection.indexes.create_one({"geometry.geolocation"=>Mongo::Index::GEO2DSPHERE})
+	end
+
+	def self.remove_indexes
+		collection.indexes.drop_one("geometry.geolocation_2dsphere")
+	end
+
+	def self.near(point, max_meters=nil)
+		if max_meters
+			query =	{:$near=>{:$geometry=>point.to_hash, :$maxDistance=>max_meters}}
+		else
+			query =	{:$near=>{:$geometry=>point.to_hash}}
+		end
+		return collection.find("geometry.geolocation"=>query)
+	end
+
+	def near(max_meters=nil)
+		near_places = self.class.near(self.location, max_meters)
+		return self.class.to_places(near_places)
+	end
+
 end
