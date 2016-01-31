@@ -77,13 +77,15 @@ class Photo
 		end
 	end
 
-	def find_nearest_place_id(max_distance=nil)
+	def find_nearest_place_id(max_distance)
 		result=nil
-		near_places = Place.near(self.location, max_distance)
-		nearest_place = near_places.limit(1).projection(_id:1)
-		if nearest_place
-			result = nearest_place.first[:_id]
-			return result
+		near_places = Place.near(self.location, max_distance)		
+		if near_places
+			nearest_place = near_places.limit(1).projection(_id:1)
+			if nearest_place.count > 0
+				result = nearest_place.first[:_id]
+			end
 		end
+		return result
 	end	
 end
