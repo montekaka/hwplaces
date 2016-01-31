@@ -10,10 +10,18 @@ class Photo
 	end		
 	def contents
 		id = BSON::ObjectId(self.id)
-		p = self.class.mongo_client.database.fs.find(:_id=>id).first
+		p = self.class.mongo_client.database.fs.find_one(:_id=>id)
+		# if p
+		# 	return p[:length]
+		# end
 		if p
-			return p[:chunkSize].to_i
+			buffer = ""
+			p.chunks.reduce([]) do |x,chunk| 
+				buffer << chunk.data.data 
+			end
+			return buffer
 		end
+		
 	end	
 	def persisted?
 		if self.id.nil?
@@ -27,13 +35,13 @@ class Photo
 		if self.persisted?
 		end
 		if @contents
-			gps=EXIFR::JPEG.new(@contents).gps
-			@contents.rewind
+			gps=EXIFR::JPEG.new(@contents).gps			
 			location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)		
 			description = {}
 			description[:content_type] = 'image/jpeg'
 			description[:metadata] = {:location=>location.to_hash}					
-			grid_file = Mongo::Grid::File.new(@contents.read, description)
+			@contents.rewind
+			grid_file = Mongo::Grid::File.new(@contents.read, description)			
 			@id = grid_file.id.to_s
 			@location = location
 			r = self.class.mongo_client.database.fs.insert_one(grid_file)
@@ -55,8 +63,17 @@ class Photo
 	def self.find(p_id)
 		id = BSON::ObjectId.from_string(p_id)
 		p = mongo_client.database.fs.find(:_id=>id).first
-		photo = Photo.new(p)
-		#photo.location = p[:metadata][:location]	
-		return photo
+		if p
+			photo = Photo.new(p)
+			#photo.location = p[:metadata][:location]	
+			return photo
+		end
+	end
+
+	def destroy
+		id = BSON::ObjectId(self.id)
+		if self.class.mongo_client.database.fs.find(:_id=>id)
+			self.class.mongo_client.database.fs.find(:_id=>id).delete_one
+		end
 	end
 end
