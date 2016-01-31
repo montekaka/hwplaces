@@ -31,22 +31,28 @@ class Photo
 		end
 	end
 
-	def save
-		if self.persisted?
-		end
-		if @contents
-			gps=EXIFR::JPEG.new(@contents).gps			
-			location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)		
-			description = {}
-			description[:content_type] = 'image/jpeg'
-			description[:metadata] = {:location=>location.to_hash}					
-			@contents.rewind
-			grid_file = Mongo::Grid::File.new(@contents.read, description)			
-			@id = grid_file.id.to_s
-			@location = location
-			r = self.class.mongo_client.database.fs.insert_one(grid_file)
-		end
-		#return @id
+	def save		
+		if self.persisted?		
+			#true
+			id = BSON::ObjectId.from_string(self.id)
+			#r = Photo.mongo_client.database.fs.find(:_id=>id).update_one(:$set => {})		
+			point = Point.new({:lng=>self.location.latitude,:lat=>self.location.latitude})
+			self.class.mongo_client.database.fs.find(:_id=>id).update_one(:$set=>{:metadata=>point.to_hash})		
+		else
+			#false
+			if @contents
+				gps=EXIFR::JPEG.new(@contents).gps			
+				location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)		
+				description = {}
+				description[:content_type] = 'image/jpeg'
+				description[:metadata] = {:location=>location.to_hash}					
+				@contents.rewind
+				grid_file = Mongo::Grid::File.new(@contents.read, description)			
+				@id = grid_file.id.to_s
+				@location = location				
+				r = self.class.mongo_client.database.fs.insert_one(grid_file)
+			end	
+		end		
 	end
 
 	def self.all(offset=0, limit=nil)		
