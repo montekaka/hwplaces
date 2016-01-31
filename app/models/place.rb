@@ -119,7 +119,10 @@ class Place
 
 	def near(max_meters=nil)
 		near_places = self.class.near(self.location, max_meters)
-		return self.class.to_places(near_places)
+		if near_places
+			return self.class.to_places(near_places)
+		else
+			return nil
+		end
 	end
-
 end

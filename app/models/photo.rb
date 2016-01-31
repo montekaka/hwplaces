@@ -76,4 +76,14 @@ class Photo
 			self.class.mongo_client.database.fs.find(:_id=>id).delete_one
 		end
 	end
+
+	def find_nearest_place_id(max_distance=nil)
+		result=nil
+		near_places = Place.near(self.location, max_distance)
+		nearest_place = near_places.limit(1).projection(_id:1)
+		if nearest_place
+			result = nearest_place.first[:_id]
+			return result
+		end
+	end	
 end
