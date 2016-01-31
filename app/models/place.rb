@@ -125,4 +125,15 @@ class Place
 			return nil
 		end
 	end
+
+	def photos(offset=0, limit=nil)
+		Photo.find_photos_for_place(self.id).skip(offset).limit()
+		photos = Photo.find_photos_for_place(self.id).skip(offset)
+		photos = photos.limit(limit) if !limit.nil?		
+		result = []
+		photos.each do |p|
+			result << Photo.new(p)
+		end
+		return result		
+	end
 end

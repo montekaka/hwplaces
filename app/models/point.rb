@@ -1,5 +1,5 @@
 class Point
-	attr_accessor :longitude, :latitude
+	attr_accessor :longitude, :latitude	
 	def initialize(params={})
 		if params[:geolocation]
 			@longitude = params[:geolocation][:coordinates][0]
@@ -7,9 +7,14 @@ class Point
 		elsif params[:coordinates]
 			@longitude = params[:coordinates][0]
 			@latitude = params[:coordinates][1]
+		elsif params[:metadata]
+			if params[:metadata][:location]
+				@longitude = params[:metadata][:location][:coordinates][0]
+				@latitude = params[:metadata][:location][:coordinates][1]						
+			end
 		elsif params[:location]
 			@longitude = params[:location][:coordinates][0]
-			@latitude = params[:location][:coordinates][1]			
+			@latitude = params[:location][:coordinates][1]						
 		else
 			@longitude = params[:lng]
 			@latitude = params[:lat]

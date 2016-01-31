@@ -2,8 +2,15 @@ class Photo
 	attr_accessor :id, :location
 	attr_writer :contents
 	def initialize(params={})
-		@id=params[:_id].nil? ? params[:id] : params[:_id].to_s
-		@location = params[:metadata].nil? ? params[:metadata] : Point.new(params[:metadata])		
+			@id=params[:_id].nil? ? params[:id] : params[:_id].to_s
+			if params[:metadata]
+				if params[:metadata][:location]
+					@location = Point.new(params[:metadata][:location])	
+				end
+				if params[:metadata][:place]									
+					@place = params[:metadata][:place]
+				end
+			end
 	end	
 	def self.mongo_client
 		Mongoid::Clients.default
@@ -24,7 +31,7 @@ class Photo
 		
 	end	
 	def persisted?
-		if self.id.nil?
+		if @id.nil?
 			return false
 		else
 			return true
@@ -35,17 +42,25 @@ class Photo
 		if self.persisted?		
 			#true
 			id = BSON::ObjectId.from_string(self.id)
-			#r = Photo.mongo_client.database.fs.find(:_id=>id).update_one(:$set => {})		
-			point = Point.new({:lng=>self.location.latitude,:lat=>self.location.latitude})
-			self.class.mongo_client.database.fs.find(:_id=>id).update_one(:$set=>{:metadata=>point.to_hash})		
+			doc = self.class.mongo_client.database.fs.find(:_id=>id).first
+			doc[:metadata][:location] = @location.to_hash
+			doc[:metadata][:place] = @place
+			self.class.mongo_client.database.fs.find(:_id=>id).update_one(doc)		
 		else
 			#false
 			if @contents
 				gps=EXIFR::JPEG.new(@contents).gps			
-				location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)		
+				@location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)						
 				description = {}
 				description[:content_type] = 'image/jpeg'
-				description[:metadata] = {:location=>location.to_hash}					
+				#description[:metadata][:place] = @place
+				#description[:metadata][:location] = @location.to_hash				
+				description[:metadata] = {
+					:location=>@location.to_hash,
+					:place=>@place
+				}
+				#description[:metadata] = {:location=>@location.to_hash}
+				#description[:metadata] = {:place=>@place}
 				@contents.rewind
 				grid_file = Mongo::Grid::File.new(@contents.read, description)			
 				@id = grid_file.id.to_s
@@ -94,4 +109,26 @@ class Photo
 		end
 		return result
 	end	
+
+	def place
+		#gette		
+		if @place
+			Place.find(@place)
+		end
+	end
+	def place=(p)
+		if p.class == Place
+			@place = BSON::ObjectId.from_string(p.id.to_s)
+		elsif p.class == String
+			@place = BSON::ObjectId.from_string(p)
+		else
+			@place = p
+		end		
+	end
+
+	def self.find_photos_for_place(place_id)
+		pid = BSON::ObjectId.from_string(place_id)
+		result = self.mongo_client.database.fs.find("metadata.place"=>pid)
+		return result
+	end
 end
