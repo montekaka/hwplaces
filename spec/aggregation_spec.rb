@@ -100,7 +100,7 @@ feature "Module #3 Aggregation Framework Tests" do
         new_rec = Place.collection.find.to_a.sample
         new_rec[:_id] = nil
         new_rec[:address_components][0][:long_name] = test_name
-        new_rec[:address_components][0][:types] = "country"
+        new_rec[:address_components][0][:types] = ["country"]
         Place.collection.insert_one(new_rec)
         raw_ac_count.push(test_name)
         test_result = Place.get_country_names

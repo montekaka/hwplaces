@@ -38,16 +38,16 @@ feature "Module #3 Show Place and Photo Tests", :type => :routing do
   context "rq01" do
     before :all do    
       load "#{Rails.root}/db/seeds.rb"  
-      file = File.open('./db/image1.jpg')
+      file = File.open('./db/image1.jpg','rb')
 
       # make sure all places have photos linked for tests
       Place.all.each { |p| 
         if (p.photos.empty?) then
           photo = Photo.new 
-          f = File.open("./db/image1.jpg")
+          f = File.open("./db/image1.jpg",'rb')
           photo.contents = f
           id = photo.save
-          photo.place = p.id
+          photo.place = BSON::ObjectId(p.id)
           photo.save
         end
       }

@@ -46,8 +46,7 @@ class Place
 		end
 	end
 
-	def self.all(offset=0, limit=nil)
-		tmp = {} #hash needs to stay in stable order provided
+	def self.all(offset=0, limit=nil)		
 		places = collection.find.skip(offset)
 		places = places.limit(limit) if !limit.nil?
 		result = []

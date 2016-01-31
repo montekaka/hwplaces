@@ -20,7 +20,7 @@ feature "Module #3 Relationship Tests" do
       #reload db with application images
       (1..6).each { |n|
         p = Photo.new 
-        f = File.open("./db/image#{n}.jpg")
+        f = File.open("./db/image#{n}.jpg",'rb')
         p.contents = f
         id = p.save
       }    
@@ -81,7 +81,7 @@ feature "Module #3 Relationship Tests" do
 
     it "Photo instance method save, saves object if not already persitsed" do 
       # Test to see if it persists new object
-      f = File.open('./db/image1.jpg')
+      f = File.open('./db/image1.jpg','rb')
       test = EXIFR::JPEG.new(f).gps
       f.rewind
       @photo.contents = f

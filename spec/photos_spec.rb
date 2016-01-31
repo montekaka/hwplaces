@@ -46,7 +46,7 @@ feature "Module #3 Photo Tests" do
     context "rq02" do 
       it "Photo class has expected attributes" do
         place = Place.all.first
-        f=File.open('./db/image1.jpg')
+        f=File.open('./db/image1.jpg','rb')
         photo = Photo.new
         expect(photo).to respond_to(:id)
         expect{photo.id = "test_id"}.to_not raise_error
@@ -106,7 +106,7 @@ feature "Module #3 Photo Tests" do
     end      
 
     it "save returns expected type and result" do
-      f = File.open('./db/image1.jpg')
+      f = File.open('./db/image1.jpg','rb')
       test = EXIFR::JPEG.new(f).gps
       f.rewind
       @photo.contents = f
@@ -135,7 +135,7 @@ feature "Module #3 Photo Tests" do
       #refill db
       (1..6).each { |n|
         p = Photo.new 
-        f = File.open("./db/image#{n}.jpg")
+        f = File.open("./db/image#{n}.jpg",'rb')
         f.rewind
         p.contents = f
         id = p.save
@@ -187,7 +187,7 @@ feature "Module #3 Photo Tests" do
       #refill db
       (1..6).each { |n|
         p = Photo.new 
-        f = File.open("./db/image#{n}.jpg")
+        f = File.open("./db/image#{n}.jpg",'rb')
         f.rewind
         p.contents = f
         id = p.save
@@ -236,14 +236,14 @@ feature "Module #3 Photo Tests" do
     it "contents returns expected type and result" do
       #refill db
       photo = Photo.new 
-      tf = File.open("./db/image1.jpg")
+      tf = File.open("./db/image1.jpg",'rb')
       tf.rewind
       photo.contents = tf
       id = photo.save      
       tid = Photo.mongo_client.database.fs.find.first[:_id]
       p = Photo.find(tid.to_s)
       nf = File.open("./log/output.jpg", "wb") { |file| file.write(p.contents) }
-      f = File.open('./db/image1.jpg')
+      f = File.open('./db/image1.jpg','rb')
       expect(File.size('./log/output.jpg')).to eq File.size('./db/image1.jpg')
       expect(FileUtils.identical?('./log/output.jpg', './db/image1.jpg')).to be true
       File.delete('./log/output.jpg')
@@ -270,7 +270,7 @@ feature "Module #3 Photo Tests" do
 
     it "destroy deletes file and its contents from GridFS" do
       files_stored = Photo.mongo_client.database.fs.find.count
-      @photo.contents = File.open("./db/image1.jpg")
+      @photo.contents = File.open("./db/image1.jpg",'rb')
       @photo.save
       expect(Photo.find(@photo.id)).to_not be_nil
       expect(Photo.mongo_client.database.fs.find.count).to eq (files_stored + 1)

@@ -4,9 +4,15 @@ class Point
 		if params[:geolocation]
 			@longitude = params[:geolocation][:coordinates][0]
 			@latitude = params[:geolocation][:coordinates][1]
+		elsif params[:coordinates]
+			@longitude = params[:coordinates][0]
+			@latitude = params[:coordinates][1]
+		elsif params[:location]
+			@longitude = params[:location][:coordinates][0]
+			@latitude = params[:location][:coordinates][1]			
 		else
-			@longitude = params[:location][:lng]
-			@latitude = params[:location][:lat]
+			@longitude = params[:lng]
+			@latitude = params[:lat]
 		end
 	end
 	def to_hash

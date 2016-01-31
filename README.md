@@ -146,7 +146,8 @@ generated should be fine.
     |   |-- image4.jpg
     |   |-- image5.jpg
     |   |-- image6.jpg
-    |   `-- places.json
+    |   |-- places.json
+    |   `-- seeds.rb
     |-- .rspec (an important hidden file)
     `-- spec
         |-- aggregation_spec.rb
@@ -190,7 +191,7 @@ generated should be fine.
         ```
 
 
-    * Add the provided image and json data files to your `db/` directory.
+    * Add the provided image, json data, and seeds.rb files to your `db/` directory.
 
     * Add the `spec/*.rb` files provided with the bootstrap fileset to a
     corresponding  `spec/` directory within your `places` application. 
@@ -827,7 +828,7 @@ GridFS, there is no need for a `collection` method. This class must:
 
     ```ruby
     > place=Place.all.first
-    > f=File.open('./db/image1.jpg')
+    > f=File.open('./db/image1.jpg','rb')
     > photo = Photo.new
     > photo.location = place.location
     > photo.contents = f
@@ -914,7 +915,7 @@ This method must:
     the geolocation information through the call to `gps`
 
     ```ruby
-    > f = File.open('./db/image1.jpg')
+    > f = File.open('./db/image1.jpg','rb')
      => #<File:./db/image1.jpg> 
 
     > gps=EXIFR::JPEG.new(f).gps
@@ -945,7 +946,7 @@ This method must:
     You can demonstrate your new `save` method using the Rails console.
 
     ```ruby
-    > f = File.open('./db/image1.jpg')
+    > f = File.open('./db/image1.jpg','rb')
      => #<File:./db/image1.jpg> 
     > photo=Photo.new
      => #<Photo:0x00000005fb4690> 
@@ -1077,7 +1078,7 @@ contents associated with the ID of the object instance. This method must:
 
     ```ruby
     > photo=Photo.new
-    > photo.contents=File.open('./db/image1.jpg')
+    > photo.contents=File.open('./db/image1.jpg','rb')
      => #<File:./db/image1.jpg> 
     > photo.save
      => "565515efe301d0c0ad000015" 
@@ -1316,7 +1317,7 @@ reference. This method must:
 
     ```ruby
     > Photo.all.each {|photo| photo.destroy }
-    > 5.times {photo=Photo.new; photo.contents=File.open('./db/image1.jpg'); photo.save}
+    > 5.times {photo=Photo.new; photo.contents=File.open('./db/image1.jpg','rb'); photo.save}
     > place=Place.all.first
     > Photo.all.each {|photo| photo.place=place; photo.save}
     ```
@@ -1712,5 +1713,5 @@ and will perform a test with different query terms.
 `-- vendor
 ```
 
-#### Last Updated: 2015-12-23
+#### Last Updated: 2016-01-30a
 
