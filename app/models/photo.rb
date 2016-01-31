@@ -28,10 +28,11 @@ class Photo
 		end
 		if @contents
 			gps=EXIFR::JPEG.new(@contents).gps
+			@contents.rewind
 			location = Point.new(:lng=>gps.longitude, :lat=>gps.latitude)		
 			description = {}
 			description[:content_type] = 'image/jpeg'
-			description[:metadata] = {:location=>location.to_hash}
+			description[:metadata] = {:location=>location.to_hash}					
 			grid_file = Mongo::Grid::File.new(@contents.read, description)
 			@id = grid_file.id.to_s
 			@location = location
